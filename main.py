@@ -2,10 +2,11 @@ import sys
 from Adafruit_IO import MQTTClient
 import time
 import random
+from Port import *
 from TM_test import *
-AIO_FEED_ID = "Button1"
+AIO_FEED_ID = ["Button1","fan"]
 AIO_USERNAME = "LamVinh"
-AIO_KEY = "aio_ZIKb16NpOfu9Xwm16hN1KEB1BmAN"
+AIO_KEY = "aio_uLJU69t5X62ciapGElvWGcEbs7jG"
 
 def connected(client):
     print("Ket noi thanh cong ...")
@@ -19,9 +20,15 @@ def disconnected(client):
     print("Ngat ket noi ...")
     sys.exit (1)
 
-def message(client , feed_id , payload):
-    print("Nhan du lieu: " + payload)
-
+def  message(client , feed_id , payload):
+    print("Nhan du lieu: " + payload + "feed id : " + feed_id)
+    if(feed_id == "Button1"):
+        if payload == "0":
+            writeData(1)
+        else:
+            writeData(2)
+    if(feed_id == "fan"):
+            writeData(payload)
 client = MQTTClient(AIO_USERNAME , AIO_KEY)
 client.on_connect = connected
 client.on_disconnect = disconnected
@@ -41,16 +48,16 @@ while True:
     ai_detection = ai_detection - 1
 
     # cập nhật dữ liệu nhận dạng có người hay không mỗi 3 giây
-    if ai_detection <= 0:
-        ai_detection = 5
-        prev_result = ai_result
-        ai_result = simple_AI()
-        if prev_result != ai_result:
-            print("AI result",ai_result)
-            client.publish('AI',ai_result)
+    # if ai_detection <= 0:
+    #     ai_detection = 5
+    #     prev_result = ai_result
+    #     ai_result = simple_AI()
+    #     if prev_result != ai_result:
+    #         print("AI result",ai_result)
+    #         client.publish('AI',ai_result)
 
 
-    # cập nhật dữ liệu còn lại mỗi 10 giây
+    #cập nhật dữ liệu còn lại mỗi 10 giây
     if counter <= 0:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
         counter = 10
         #To do
@@ -61,6 +68,7 @@ while True:
         client.publish('Humi_info',humi)  
         light = random.randint(30,300)
         client.publish('light2',light)
+    readSerial(client)
     time.sleep(1)
     pass
 
